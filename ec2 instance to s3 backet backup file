@@ -1,0 +1,30 @@
+#/bin/bash/
+
+# The below command is used to convert the database backup "lesm" into lesm.sql format
+docker exec 48a738f30ccf sh -c "mysqldump --user=root --password=rajuraju --ignore-table=your_database.your_table1 --ignore-table=your_database.your_table2 lesm > /var/lib/mysql/lesm/lesm_"$(date '+%Y-%m-%d')".sql"
+
+# The below command is to create the folder 
+mkdir /root/Mysql_data
+
+# The below command is used to copy the content of LESM from the container to local machine 
+docker cp 48a738f30ccf:/var/lib/mysql/lesm/lesm_"$(date '+%Y-%m-%d').sql" /root/Mysql_data/
+
+
+# The below command is used to create the folder with the name assigned as the current date and month in "AWS S3 Bucket".
+aws s3api put-object --bucket kotesiva --key Mysql_backup_"$(date '+%Y-%m-%d')"/
+
+
+# The below command is used to push the copied content from container to "AWS S3 Bucket"
+aws s3 sync /root/Mysql_data s3://kotesiva/Mysql_backup_"$(date '+%Y-%m-%d')"
+
+if [ $? -eq 0 ]; then
+        # The below command is used to delete the 1 day ago backed up folder in aws S3 bucket 
+        aws s3 rm s3://kotesiva/Mysql_backup_"$(date -d "1 days ago" "+%Y-%m-%d")" --recursive
+else
+        echo " The Upload is not successful" 
+fi
+
+echo " All the commands and the IF condition are working properly  "
+
+# The below command is to delete the folder which was created earlier 
+rm -rf /root/Mysql_data
