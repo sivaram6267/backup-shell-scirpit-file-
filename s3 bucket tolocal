@@ -1,0 +1,12 @@
+######## The below command is used to remove the folder with the name assigned as yesterdays folder ########
+Remove-Item -Recurse "C:\Users\Rama Krishna\Downloads\pem files\s3_bucket_$((Get-Date).AddDays(-1).ToString("yyyy-MM-dd"))"
+
+ 
+
+            ########  The below command is used to create the folder with the name assigned current todays ########
+new-item -itemtype directory "C:\Users\Rama Krishna\Downloads\pem files\s3_bucket_$(Get-Date -Format 'yyyy-MM-dd')"
+
+ 
+
+            ########   The below command is used to copy the mysql backup folder from aws portal to our local system ########
+aws s3 cp s3://kotesiva/"Mysql_backup_$(Get-Date -Format 'yyyy-MM-dd')"/ "C:\Users\Rama Krishna\Downloads\pem files\s3_bucket_$(Get-Date -Format 'yyyy-MM-dd')" --recursive
